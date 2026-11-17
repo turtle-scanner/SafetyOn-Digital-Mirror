@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.tmp
+*.log
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Output previews / scratch
+table_edge_check.png
+live_test.png
+*.docx
+*.pdf
+세이프티온_비상긴급호출_전송로그.txt
