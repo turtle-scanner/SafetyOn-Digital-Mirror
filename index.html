@@ -3,305 +3,704 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SafetyON™ Digital Rearview Mirror Web Simulator</title>
+<title>SafetyON™ All-in-One Electronic Digital Rearview Mirror Simulator</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  body { background: #050811; color: #f8fafc; font-family: 'Pretendard', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
-  #header { width: 100%; max-width: 1280px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; background: #0b1120; border-bottom: 1px solid #1e293b; }
-  .title-group h1 { font-size: 16px; color: #38bdf8; font-weight: bold; }
-  .title-group p { font-size: 11px; color: #a3e635; margin-top: 2px; }
-  .status-badges { display: flex; gap: 8px; font-size: 12px; font-weight: bold; }
-  .badge { padding: 4px 10px; border-radius: 6px; background: #1e293b; }
-  .badge-timer { color: #4ade80; border: 1px solid #22c55e; }
-  .badge-state { color: #facc15; border: 1px solid #eab308; }
-  #canvas-container { position: relative; width: 100%; max-width: 1280px; aspect-ratio: 16 / 8.5; background: #0a0e1a; border: 2px solid #334155; margin-top: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-  canvas { width: 100%; height: 100%; display: block; }
+  body { background: #050811; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Pretendard', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; padding: 4px; }
+  #canvas-container { position: relative; width: 100%; max-width: 1360px; aspect-ratio: 1360 / 680; background: #0a0e18; border: 3px solid #334155; border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.9); }
+  canvas { width: 100%; height: 100%; display: block; border-radius: 5px; }
   #video-element { display: none; }
-  #dock { width: 100%; max-width: 1280px; display: flex; gap: 6px; padding: 8px 10px; background: #0b1120; border-top: 1px solid #1e293b; overflow-x: auto; }
-  .btn { flex: 1; min-width: 90px; padding: 8px 4px; font-size: 11px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.15s; }
-  .btn:active { transform: scale(0.96); }
+  #dock { width: 100%; max-width: 1360px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 6px; }
+  .btn { padding: 9px 2px; font-size: 11px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.12s; white-space: nowrap; }
+  .btn:active { transform: scale(0.95); opacity: 0.9; }
   .btn-space { background: #dc2626; }
   .btn-a { background: #d97706; }
   .btn-f { background: #0284c7; }
   .btn-b { background: #7c3aed; }
   .btn-l { background: #16a34a; }
+  .btn-tab { background: #0891b2; }
   .btn-t { background: #059669; }
   .btn-s { background: #475569; }
   .btn-r { background: #2563eb; }
-  #ecall-modal { display: none; position: absolute; top: 12%; left: 18%; width: 64%; height: 76%; background: rgba(11, 17, 32, 0.95); border: 2px solid #38bdf8; border-radius: 12px; padding: 20px; z-index: 100; box-shadow: 0 0 40px rgba(56, 189, 248, 0.4); }
-  .ecall-title { font-size: 16px; font-weight: bold; color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 8px; margin-bottom: 14px; text-align: center; }
-  .ecall-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-  .ecall-card { background: #1e293b; border-radius: 8px; padding: 12px; font-size: 11px; line-height: 1.5; border: 1px solid #475569; }
-  .card-119 { border-top: 4px solid #ef4444; }
-  .card-ctrl { border-top: 4px solid #f59e0b; }
-  .card-fam { border-top: 4px solid #22c55e; }
+  .btn-q { background: #334155; }
+  #cam-prompt { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: #1e3a8a; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; border: 1px solid #38bdf8; z-index: 50; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer; }
 </style>
 </head>
 <body>
 
-<video id="video-element" autoplay playsinline></video>
-
-<div id="header">
-  <div class="title-group">
-    <h1>SafetyON™ All-in-One Electronic Digital Rearview Mirror</h1>
-    <p>[특허 10건 공표 | 비상제동 0206816 우선심사 확정 | 반도체 0190435 우선심사결정]</p>
-  </div>
-  <div class="status-badges">
-    <div class="badge badge-state" id="hud-status">정상 주행 [3차선]</div>
-    <div class="badge badge-timer" id="hud-timer">발표타이머 00:00 / 05:00</div>
-    <div class="badge" style="color:#38bdf8;">심박: 74bpm</div>
-  </div>
-</div>
+<video id="video-element" autoplay playsinline muted></video>
+<div id="cam-prompt" onclick="initCamera()">📷 웹캠 연결하기 (클릭하여 얼굴 실시간 감시 시작)</div>
 
 <div id="canvas-container">
-  <canvas id="mirror-canvas" width="1360" height="680"></canvas>
-  <div id="ecall-modal">
-    <div class="ecall-title">[비상 정차 완료] 최우측 갓길 정차 완료 및 3자 동시 e-Call 구난 가동</div>
-    <div class="ecall-cards">
-      <div class="ecall-card card-119">
-        <strong style="color:#ef4444; font-size:13px;">119 소방청 긴급출동</strong><br><br>
-        • 상태: 핫라인 연결 완료<br>
-        • 위치: 경부선 382.4km 하행<br>
-        • 환자: 의식소실(심박 74bpm)<br>
-        • 조치: 구급차 출동 중 (3분 후 도착)
-      </div>
-      <div class="ecall-card card-ctrl">
-        <strong style="color:#f59e0b; font-size:13px;">운송회사 중앙관제실</strong><br><br>
-        • 상태: LTE 관제 채널 LIVE<br>
-        • 차량: 경기70아 1234호<br>
-        • 도어: 비상 자동 언락 완료<br>
-        • 조치: 대체 버스 긴급 배차
-      </div>
-      <div class="ecall-card card-fam">
-        <strong style="color:#22c55e; font-size:13px;">가족/지인 안심 SMS</strong><br><br>
-        • 상태: 긴급 문자 발송 완료<br>
-        • 수신: <strong>010-5121-1353</strong><br>
-        • 내용: [세이프티온 안심문자]<br>
-        • 조치: 위치 지도 링크 전송 완료
-      </div>
-    </div>
-    <div style="text-align: center; margin-top: 18px;">
-      <button class="btn btn-r" style="max-width: 200px; padding: 10px 20px;" onclick="resetSystem()">[R] 시스템 리셋</button>
-    </div>
-  </div>
+  <canvas id="mirror" width="1360" height="680"></canvas>
 </div>
 
 <div id="dock">
-  <button class="btn btn-space" onclick="triggerIncapacitated()">SPACE: 기절/비상정차</button>
+  <button class="btn btn-space" onclick="triggerSPACE()">SPACE: 기절/정차</button>
   <button class="btn btn-a" onclick="triggerSUA()">A: 급발진 150kgf</button>
-  <button class="btn btn-f" onclick="triggerFlood()">F: 침수 도어유리파쇄</button>
+  <button class="btn btn-f" onclick="triggerFlood()">F: 침수 도어파쇄</button>
   <button class="btn btn-b" onclick="triggerBattery()">B: EV배터리 방호</button>
-  <button class="btn btn-l" onclick="triggerLeftLane()">L: 좌측회피 추월</button>
+  <button class="btn btn-l" onclick="triggerLeftLane()">L: 좌측회피</button>
+  <button class="btn btn-tab" onclick="toggleFullScreen()">TAB: 전체화면</button>
   <button class="btn btn-t" onclick="toggleTimer()">T: 발표타이머</button>
   <button class="btn btn-s" onclick="toggleMute()">S: 음소거</button>
-  <button class="btn btn-r" onclick="resetSystem()">R: 리셋</button>
+  <button class="btn btn-r" onclick="resetSim()">R: 리셋</button>
+  <button class="btn btn-q" onclick="alert('세이프티온 웹 시뮬레이터입니다.')">Q: 정보</button>
 </div>
 
 <script>
-const canvas = document.getElementById('mirror-canvas');
+const canvas = document.getElementById('mirror');
 const ctx = canvas.getContext('2d');
 const video = document.getElementById('video-element');
+const camPrompt = document.getElementById('cam-prompt');
 
-let speed = 82.0;
-let lane = 3.0; // 3.0 = 3차선, 5.0 = 갓길
-let state = "NORMAL";
-let countdown = 10.0;
-let steerAngle = 0.0;
-let rearDist = 22.0;
-let frontDist = 32.0;
+let hasWebcam = false;
 let simTime = 0;
-let isMuted = false;
+let lastTime = performance.now();
 
-// Audio Synth
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playBeep(freq = 880, dur = 0.1) {
+// Vehicle Physics
+let speed = 82.0;
+let currentLaneF = 3.0; // 3.0 = 3차선, 5.0 = 5차선 갓길
+let state = "NORMAL"; // NORMAL, COUNTDOWN, EVADE, STOPPED, SUA, BATTERY, FLOOD
+let gForce = 0.0;
+let steerAngle = 0.0;
+let countdown = 10.0;
+let eyeOpenRatio = 95; // 95%, 45%, 0%
+let leftOpen = true;
+let rightOpen = true;
+
+// Rear Car Physics
+let rearLeadDist = 22.0;
+let rearLeadOffsetX = 0.0;
+let rearTailBlink = false;
+let rearLeftDist = 33.0;
+
+// Front Cars
+let frontLeadDist = 32.0;
+let frontLeftDist = 39.0;
+let frontRightDist = 20.0;
+let frontBrakeActive = false;
+
+// Audio Mute & Presentation Timer
+let isMuted = false;
+let timerRunning = false;
+let timerSec = 0;
+
+// Road scrolling offset
+let roadOffset = 0;
+
+// Side Traffic Objects
+let leftTraffic = [
+  { y: 180, speed: 95, type: 'BUS', col: '#b91c1c', w: 38, h: 80, lane: 0 },
+  { y: 460, speed: 105, type: 'SEDAN', col: '#1e3a8a', w: 28, h: 50, lane: 1 }
+];
+let rightTraffic = [
+  { y: 120, speed: 70, type: 'TRUCK', col: '#475569', w: 36, h: 75, lane: 0 },
+  { y: 390, speed: 65, type: 'SUV', col: '#334155', w: 30, h: 55, lane: 1 }
+];
+
+// Audio Web Synth
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function playTone(freq, dur, type='sine') {
   if (isMuted) return;
   try {
+    if (!audioCtx) audioCtx = new AudioContext();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
+    osc.type = type;
     osc.frequency.value = freq;
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start();
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
     osc.stop(audioCtx.currentTime + dur);
   } catch(e){}
 }
 
-// Webcam Init
-if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-  navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-    video.srcObject = stream;
-    video.play();
-  }).catch(() => console.log("Webcam not available, fallback rendering."));
+// Camera Init
+function initCamera() {
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+      .then(stream => {
+        video.srcObject = stream;
+        video.play();
+        hasWebcam = true;
+        camPrompt.style.display = 'none';
+      })
+      .catch(err => {
+        console.log("Cam denied or error:", err);
+        camPrompt.innerText = "웹캠 권한 필요 (화면 가상 얼굴로 감시 작동 중)";
+        setTimeout(() => camPrompt.style.display = 'none', 3000);
+      });
+  }
 }
+setTimeout(initCamera, 500);
 
-// Key listeners
+// Keyboard controls
 window.addEventListener('keydown', e => {
-  if (e.code === 'Space') { e.preventDefault(); triggerIncapacitated(); }
+  if (e.code === 'Space') { e.preventDefault(); triggerSPACE(); }
   else if (e.key === 'a' || e.key === 'A') triggerSUA();
   else if (e.key === 'f' || e.key === 'F') triggerFlood();
   else if (e.key === 'b' || e.key === 'B') triggerBattery();
   else if (e.key === 'l' || e.key === 'L') triggerLeftLane();
   else if (e.key === 't' || e.key === 'T') toggleTimer();
   else if (e.key === 's' || e.key === 'S') toggleMute();
-  else if (e.key === 'r' || e.key === 'R') resetSystem();
+  else if (e.key === 'r' || e.key === 'R') resetSim();
+  else if (e.key === 'Tab') { e.preventDefault(); toggleFullScreen(); }
 });
 
-function triggerIncapacitated() {
+function triggerSPACE() {
   if (state === "NORMAL") {
     state = "COUNTDOWN";
     countdown = 10.0;
-    playBeep(920, 0.2);
+    eyeOpenRatio = 0;
+    leftOpen = false;
+    rightOpen = false;
+    playTone(800, 0.25, 'sawtooth');
   }
 }
 function triggerSUA() {
   state = "SUA";
-  playBeep(1200, 0.3);
+  playTone(1100, 0.35, 'triangle');
 }
 function triggerFlood() {
   state = "FLOOD";
-  playBeep(650, 0.4);
+  playTone(550, 0.4, 'sine');
 }
 function triggerBattery() {
   state = "BATTERY";
-  playBeep(700, 0.3);
+  playTone(680, 0.3, 'sine');
 }
 function triggerLeftLane() {
-  lane = 2.0;
-  setTimeout(() => lane = 3.0, 3000);
+  currentLaneF = 2.0;
+  steerAngle = -4.5;
+  setTimeout(() => {
+    currentLaneF = 3.0;
+    steerAngle = 0.0;
+  }, 2500);
+}
+function toggleTimer() {
+  timerRunning = !timerRunning;
 }
 function toggleMute() {
   isMuted = !isMuted;
 }
-function resetSystem() {
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+  }
+}
+function resetSim() {
   state = "NORMAL";
   speed = 82.0;
-  lane = 3.0;
+  currentLaneF = 3.0;
+  gForce = 0.0;
   steerAngle = 0.0;
-  rearDist = 22.0;
-  document.getElementById('ecall-modal').style.display = 'none';
+  countdown = 10.0;
+  eyeOpenRatio = 95;
+  leftOpen = true;
+  rightOpen = true;
+  rearLeadDist = 22.0;
+  rearLeadOffsetX = 0.0;
 }
 
-// Timer
-let timerSec = 0;
-let timerRunning = false;
-function toggleTimer() { timerRunning = !timerRunning; }
+// Presentation Timer Tick
 setInterval(() => {
-  if (timerRunning) {
-    timerSec++;
-    let m = String(Math.floor(timerSec/60)).padStart(2, '0');
-    let s = String(timerSec%60).padStart(2, '0');
-    document.getElementById('hud-timer').innerText = `발표타이머 ${m}:${s} / 05:00`;
-  }
+  if (timerRunning) timerSec++;
 }, 1000);
 
-// Main Loop
-function render() {
-  simTime += 0.016;
+// Main Animation Loop
+function loop(now) {
+  const dt = Math.min(0.06, (now - lastTime) / 1000);
+  lastTime = now;
+  simTime += dt;
 
-  // Logic Updates
+  // 1. Logic Update
+  roadOffset = (roadOffset + speed * dt * 7.5) % 80;
+
   if (state === "COUNTDOWN") {
-    countdown -= 0.016;
+    countdown -= dt;
+    eyeOpenRatio = 0;
+    leftOpen = false;
+    rightOpen = false;
+    if (intMod(now * 3.5, 2) === 0) playTone(900, 0.08, 'sawtooth');
     if (countdown <= 0) {
-      state = "EVADING";
+      state = "EVADE";
     }
-  } else if (state === "EVADING") {
-    lane = Math.min(5.0, lane + 0.016 * 1.2);
-    speed = Math.max(0.0, speed - 0.016 * 25.0);
-    steerAngle = (lane < 4.5) ? 9.2 : 0.0;
-    if (speed <= 0.0 && lane >= 4.8) {
+  } else if (state === "EVADE") {
+    // S-curve smooth lane change from 3.0 to 5.0
+    currentLaneF = Math.min(5.0, currentLaneF + dt * 0.95);
+    speed = Math.max(0.0, speed - dt * 28.0);
+    gForce = -0.32;
+    
+    // Counter-steer
+    if (currentLaneF < 4.2) steerAngle = 9.2;
+    else if (currentLaneF < 4.8) steerAngle = -4.5;
+    else steerAngle = 0.0;
+
+    rearLeadOffsetX = Math.min(140, rearLeadOffsetX + dt * 50);
+    rearLeadDist = Math.min(55, rearLeadDist + dt * 8);
+
+    if (speed <= 0.0 && currentLaneF >= 4.9) {
       state = "STOPPED";
-      document.getElementById('ecall-modal').style.display = 'block';
+      speed = 0.0;
+      gForce = 0.0;
+      steerAngle = 0.0;
     }
   } else if (state === "SUA") {
-    speed = Math.max(0.0, speed - 0.016 * 35.0);
-    rearDist = Math.max(8.5, rearDist - 0.016 * 12.0);
+    // SUA Emergency 150kgf Braking in Lane 3
+    speed = Math.max(0.0, speed - dt * 38.0);
+    gForce = -0.38;
+    rearLeadOffsetX = 0.0;
+    if (speed <= 0.0) {
+      rearLeadDist = Math.max(8.5, rearLeadDist - dt * 14);
+    } else {
+      rearLeadDist = Math.max(12.0, rearLeadDist - dt * 8);
+    }
+  } else if (state === "BATTERY") {
+    speed = Math.max(0.0, speed - dt * 18.0);
+    gForce = -0.20;
+    if (speed <= 0.0) {
+      rearLeadDist = Math.max(8.5, rearLeadDist - dt * 12);
+    }
+  } else if (state === "NORMAL") {
+    // Natural subtle pupil change simulation
+    eyeOpenRatio = (Math.sin(simTime * 0.7) > 0.88) ? 45 : 95;
+    leftOpen = true;
+    rightOpen = (eyeOpenRatio === 95);
+    rearLeadDist = 22.0 + Math.sin(simTime * 1.5) * 4.5;
+    rearLeadOffsetX = 0.0;
   }
 
-  // Draw 5-Channel Mirror
-  ctx.fillStyle = "#0a0e1a";
+  // Update Traffic
+  for (let v of leftTraffic) {
+    v.y += (v.speed - speed) * dt * 5.0;
+    if (v.y > 620) v.y = -60;
+    if (v.y < -100) v.y = 600;
+  }
+  for (let v of rightTraffic) {
+    v.y += (v.speed - speed) * dt * 5.0;
+    if (v.y > 620) v.y = -60;
+    if (v.y < -100) v.y = 600;
+  }
+
+  // -------------------------------------------------------------
+  // 2. Render Full Canvas
+  // -------------------------------------------------------------
+  ctx.fillStyle = "#0c101c";
   ctx.fillRect(0, 0, 1360, 680);
 
   // Outer Mirror Frame
-  ctx.strokeStyle = "#38bdf8";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(25, 45, 1310, 615);
+  let blinkRed = (state === "COUNTDOWN" || state === "EVADE") && (intMod(now * 8, 2) === 0);
+  ctx.strokeStyle = blinkRed ? "#ef4444" : "#38bdf8";
+  ctx.lineWidth = blinkRed ? 5 : 3;
+  ctx.strokeRect(25, 55, 1310, 585);
 
   // Top Lens
   ctx.beginPath();
-  ctx.arc(680, 45, 20, 0, Math.PI * 2);
+  ctx.arc(680, 52, 24, 0, Math.PI * 2);
   ctx.fillStyle = "#1e293b";
   ctx.fill();
   ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 2;
   ctx.stroke();
-
-  // Left Mirror (CH-2)
-  ctx.fillStyle = "#0f172a";
-  ctx.fillRect(40, 60, 260, 580);
-  ctx.strokeRect(40, 60, 260, 580);
+  ctx.beginPath();
+  ctx.arc(680, 52, 6, 0, Math.PI * 2);
   ctx.fillStyle = "#38bdf8";
-  ctx.font = "bold 15px sans-serif";
-  ctx.fillText("왼쪽 카메라", 125, 90);
+  ctx.fill();
 
-  // Right Mirror (CH-3)
-  ctx.fillStyle = "#0f172a";
-  ctx.fillRect(1060, 60, 260, 580);
-  ctx.strokeRect(1060, 60, 260, 580);
-  ctx.fillText("오른쪽 카메라", 1145, 90);
+  const wSide = 260;
+  const hSide = 555;
+  const sideY = 70;
+  const xLeft = 40;
+  const xRight = 1060;
 
-  // Front Mirror (CH-4)
-  ctx.fillStyle = "#111827";
-  ctx.fillRect(320, 60, 720, 140);
-  ctx.strokeRect(320, 60, 720, 140);
-  ctx.fillText("전방카메라", 640, 85);
+  const centerW = 730;
+  const centerX = 315;
+  const frontY = 70;
+  const frontH = 135;
+  const driverY = 215;
+  const driverH = 260;
+  const rearY = 485;
+  const rearH = 140;
 
-  // DSM Center (CH-1)
-  ctx.fillStyle = "#000";
-  ctx.fillRect(320, 210, 720, 270);
-  ctx.strokeRect(320, 210, 720, 270);
-  if (video.readyState >= 2) {
-    ctx.drawImage(video, 320, 210, 720, 270);
-  } else {
-    ctx.fillStyle = "#1e293b";
-    ctx.fillRect(520, 260, 320, 170);
-    ctx.fillStyle = "#94a3b8";
-    ctx.fillText("운전자 관찰 카메라 DSM (WebCam 감시 중)", 540, 350);
+  // -------------------------------------------------------------
+  // CH-2: Left Mirror
+  // -------------------------------------------------------------
+  ctx.fillStyle = "#101626";
+  ctx.fillRect(xLeft, sideY, wSide, hSide);
+  ctx.strokeStyle = "#0ea5e9";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(xLeft, sideY, wSide, hSide);
+
+  // Lane lines in left camera
+  ctx.strokeStyle = "#cbd5e1";
+  ctx.lineWidth = 2;
+  for (let y = -80 + roadOffset; y < hSide + 80; y += 80) {
+    ctx.beginPath(); ctx.moveTo(xLeft + 80, sideY + y); ctx.lineTo(xLeft + 80, sideY + y + 40); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xLeft + 180, sideY + y); ctx.lineTo(xLeft + 180, sideY + y + 40); ctx.stroke();
+  }
+  for (let v of leftTraffic) {
+    let vx = (v.lane === 0) ? xLeft + 45 : xLeft + 145;
+    ctx.fillStyle = v.col;
+    ctx.fillRect(vx, sideY + v.y, v.w, v.h);
+    ctx.strokeStyle = "#94a3b8";
+    ctx.strokeRect(vx, sideY + v.y, v.w, v.h);
+    // Tail lights
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(vx + 4, sideY + v.y + v.h - 6, 6, 4);
+    ctx.fillRect(vx + v.w - 10, sideY + v.y + v.h - 6, 6, 4);
+    if (v.y > 150 && v.y < 350) {
+      ctx.fillStyle = "rgba(220, 38, 38, 0.9)";
+      ctx.fillRect(vx - 10, sideY + v.y - 18, 70, 16);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 10px sans-serif";
+      ctx.fillText(`[${v.type}] 접근주의!`, vx - 6, sideY + v.y - 6);
+    }
+  }
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 13px sans-serif";
+  ctx.fillText("왼쪽 카메라", xLeft + 95, sideY + 25);
+
+  // -------------------------------------------------------------
+  // CH-3: Right Mirror
+  // -------------------------------------------------------------
+  ctx.fillStyle = "#101626";
+  ctx.fillRect(xRight, sideY, wSide, hSide);
+  ctx.strokeStyle = "#0ea5e9";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(xRight, sideY, wSide, hSide);
+
+  // Guardrail yellow stripes
+  for (let y = -80 + roadOffset; y < hSide + 80; y += 40) {
+    ctx.fillStyle = (intMod(y, 80) === 0) ? "#facc15" : "#475569";
+    ctx.fillRect(xRight + wSide - 18, sideY + y, 14, 25);
+  }
+  for (let y = -80 + roadOffset; y < hSide + 80; y += 80) {
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.beginPath(); ctx.moveTo(xRight + 75, sideY + y); ctx.lineTo(xRight + 75, sideY + y + 40); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xRight + 165, sideY + y); ctx.lineTo(xRight + 165, sideY + y + 40); ctx.stroke();
+  }
+  for (let v of rightTraffic) {
+    let vx = (v.lane === 0) ? xRight + 45 : xRight + 130;
+    ctx.fillStyle = v.col;
+    ctx.fillRect(vx, sideY + v.y, v.w, v.h);
+    ctx.strokeStyle = "#94a3b8";
+    ctx.strokeRect(vx, sideY + v.y, v.w, v.h);
+  }
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 13px sans-serif";
+  ctx.fillText("오른쪽 카메라", xRight + 90, sideY + 25);
+  if (state === "STOPPED" || currentLaneF > 4.5) {
+    ctx.fillStyle = "#22c55e";
+    ctx.fillText("우측 가드레일 1.2m 밀착", xRight + 55, sideY + 280);
+    ctx.fillText("승객 하차 안전 100% 확보", xRight + 55, sideY + 300);
   }
 
-  // Face Detection Box
-  ctx.strokeStyle = (state === "COUNTDOWN") ? "#ef4444" : "#22c55e";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(480, 235, 400, 220);
+  // -------------------------------------------------------------
+  // CH-4: Front Camera
+  // -------------------------------------------------------------
+  ctx.fillStyle = "#111a2e";
+  ctx.fillRect(centerX, frontY, centerW, frontH);
+  ctx.strokeStyle = "#0ea5e9";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(centerX, frontY, centerW, frontH);
 
-  // Status on DSM
-  ctx.fillStyle = (state === "COUNTDOWN") ? "rgba(220, 38, 38, 0.8)" : "rgba(34, 197, 94, 0.8)";
-  ctx.fillRect(420, 440, 520, 30);
+  // Front Road Trapezoid
+  let fxCenter = centerX + centerW / 2 - (currentLaneF - 3.0) * 80;
+  ctx.strokeStyle = "#22c55e";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(fxCenter - 40, frontY + 40); ctx.lineTo(fxCenter - 180, frontY + frontH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(fxCenter + 40, frontY + 40); ctx.lineTo(fxCenter + 180, frontY + frontH); ctx.stroke();
+
+  // Lead Car
+  ctx.fillStyle = "#334155";
+  let fcY = frontY + 60;
+  ctx.fillRect(fxCenter - 25, fcY, 50, 42);
+  ctx.strokeStyle = "#38bdf8";
+  ctx.strokeRect(fxCenter - 25, fcY, 50, 42);
+  ctx.fillStyle = "#ef4444";
+  ctx.beginPath(); ctx.arc(fxCenter - 16, fcY + 34, 4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(fxCenter + 16, fcY + 34, 4, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 12px sans-serif";
+  ctx.fillText("전방카메라", centerX + centerW/2 - 30, frontY + 22);
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "11px sans-serif";
+  ctx.fillText(`[앞차] 45고 1234 (${frontLeadDist.toFixed(1)}m)`, fxCenter - 45, fcY - 8);
+
+  // -------------------------------------------------------------
+  // CH-1: DSM Center Driver Camera
+  // -------------------------------------------------------------
+  ctx.fillStyle = "#000";
+  ctx.fillRect(centerX, driverY, centerW, driverH);
+  ctx.strokeStyle = (state === "COUNTDOWN" || state === "EVADE") ? "#ef4444" : "#22c55e";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(centerX, driverY, centerW, driverH);
+
+  // Webcam Video or Simulated Face
+  if (hasWebcam && video.readyState >= 2) {
+    ctx.save();
+    ctx.translate(centerX + centerW, driverY);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, centerW, driverH);
+    ctx.restore();
+  } else {
+    // High-Fidelity Simulated Driver Face
+    let headX = centerX + centerW / 2;
+    let headY = driverY + driverH / 2 + 10;
+    // Hair & Head
+    ctx.fillStyle = "#1e293b";
+    ctx.beginPath(); ctx.arc(headX, headY - 10, 80, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "#f5d0b5";
+    ctx.beginPath(); ctx.arc(headX, headY, 70, 0, Math.PI*2); ctx.fill();
+    // Eyes
+    if (leftOpen) {
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(headX - 28, headY - 8, 14, 8, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#0f172a"; ctx.beginPath(); ctx.arc(headX - 28, headY - 8, 5, 0, Math.PI*2); ctx.fill();
+    } else {
+      ctx.strokeStyle = "#b91c1c"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(headX - 40, headY - 8); ctx.lineTo(headX - 16, headY - 8); ctx.stroke();
+    }
+    if (rightOpen) {
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(headX + 28, headY - 8, 14, 8, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#0f172a"; ctx.beginPath(); ctx.arc(headX + 28, headY - 8, 5, 0, Math.PI*2); ctx.fill();
+    } else {
+      ctx.strokeStyle = "#b91c1c"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(headX + 16, headY - 8); ctx.lineTo(headX + 40, headY - 8); ctx.stroke();
+    }
+    // Nose & Mouth
+    ctx.fillStyle = "#e2b89b"; ctx.fillRect(headX - 3, headY + 5, 6, 15);
+    ctx.strokeStyle = "#991b1b"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(headX - 15, headY + 35); ctx.lineTo(headX + 15, headY + 35); ctx.stroke();
+  }
+
+  // Face Detection Bounding Box (Red/Yellow)
+  let boxColor = (state === "COUNTDOWN" || state === "EVADE") ? "#ef4444" : "#f59e0b";
+  ctx.strokeStyle = boxColor;
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(centerX + 180, driverY + 25, 370, 195);
+
+  // Eye Bounding Boxes (Cyan)
+  ctx.strokeStyle = "#06b6d4";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(centerX + 260, driverY + 75, 75, 45);
+  ctx.strokeRect(centerX + 395, driverY + 75, 75, 45);
+
+  // Driver DSM Label
+  ctx.fillStyle = "#22c55e";
+  ctx.font = "bold 12px sans-serif";
+  ctx.fillText("CH-1 운전자 안면/동공 DSM", centerX + 15, driverY + 22);
+
+  // Driver ID Badge (Top Right of DSM)
+  ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+  ctx.fillRect(centerX + centerW - 270, driverY + 8, 255, 24);
+  ctx.strokeStyle = "#eab308";
+  ctx.strokeRect(centerX + centerW - 270, driverY + 8, 255, 24);
+  ctx.fillStyle = "#fef08a";
+  ctx.font = "bold 11px sans-serif";
+  ctx.fillText("인증: 변귀섭 대표이사 (생체감시 ON)", centerX + centerW - 260, driverY + 24);
+
+  // Bottom DSM Status Bar
+  let statusBg = (state === "COUNTDOWN" || state === "EVADE") ? "rgba(185, 28, 28, 0.9)" : (eyeOpenRatio === 45 ? "rgba(217, 119, 6, 0.9)" : "rgba(22, 101, 52, 0.9)");
+  ctx.fillStyle = statusBg;
+  ctx.fillRect(centerX + 40, driverY + driverH - 34, centerW - 80, 26);
+  ctx.strokeStyle = "#fff";
+  ctx.strokeRect(centerX + 40, driverY + driverH - 34, centerW - 80, 26);
   ctx.fillStyle = "#fff";
-  ctx.font = "bold 14px sans-serif";
-  let eyeStatus = (state === "COUNTDOWN") ? `[기절 경고] 동공 0% 감지! 10초 비상 카운트다운 (${countdown.toFixed(1)}s)` : `[정상] 안면 및 동공 감지 -> 안전 주행 유지 (동공개도율 95%)`;
-  ctx.fillText(eyeStatus, 440, 460);
+  ctx.font = "bold 12px sans-serif";
+  let statusText = (state === "COUNTDOWN") 
+    ? `[비상 기절 경고] 동공 0% 감지! 10초 카운트다운 (${countdown.toFixed(1)}초 후 자율 갓길 정차)`
+    : (eyeOpenRatio === 45 
+      ? `[주의] 단안 감김 감지 -> 졸음운전 주의 경고 (동공개도율 45%)`
+      : `[정상] 안면 및 동공 감지 -> 안전 주행 유지 (동공개도율 95%)`);
+  ctx.fillText(statusText, centerX + 60, driverY + driverH - 17);
 
-  // Rear Camera (CH-5)
+  // -------------------------------------------------------------
+  // CH-5: Rear Camera
+  // -------------------------------------------------------------
   ctx.fillStyle = "#0f172a";
-  ctx.fillRect(320, 490, 720, 150);
-  ctx.strokeRect(320, 490, 720, 150);
-  ctx.fillText("후방카메라", 640, 515);
+  ctx.fillRect(centerX, rearY, centerW, rearH);
+  ctx.strokeStyle = "#0ea5e9";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(centerX, rearY, centerW, rearH);
+
+  let rxCenter = centerX + centerW / 2 + (currentLaneF - 3.0) * 60;
+
+  // Rear Distance Lines
+  ctx.strokeStyle = "#cbd5e1";
+  ctx.beginPath(); ctx.moveTo(rxCenter - 30, rearY + 30); ctx.lineTo(rxCenter - 160, rearY + rearH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(rxCenter + 30, rearY + 30); ctx.lineTo(rxCenter + 160, rearY + rearH); ctx.stroke();
+  ctx.strokeStyle = "#22c55e"; ctx.beginPath(); ctx.moveTo(rxCenter - 90, rearY + 70); ctx.lineTo(rxCenter + 90, rearY + 70); ctx.stroke(); // 20m
+  ctx.strokeStyle = "#facc15"; ctx.beginPath(); ctx.moveTo(rxCenter - 70, rearY + 95); ctx.lineTo(rxCenter + 70, rearY + 95); ctx.stroke(); // 10m
+  ctx.strokeStyle = "#ef4444"; ctx.beginPath(); ctx.moveTo(rxCenter - 50, rearY + 118); ctx.lineTo(rxCenter + 50, rearY + 118); ctx.stroke(); // 5m
 
   // Trailing Car in Rear Camera
-  let rcY = 560;
-  let rcW = 60;
-  let rDistLabel = (state === "SUA" || speed <= 0) ? `[뒤차] ${rearDist.toFixed(1)}m (3차선 비상정차 완료 | 2차 추돌 0건)` : `[뒤차] ${rearDist.toFixed(1)}m (추종 주행 중)`;
-  ctx.fillStyle = "#1e3a8a";
-  ctx.fillRect(680 - rcW/2, rcY, rcW, 40);
-  ctx.strokeStyle = "#38bdf8";
-  ctx.strokeRect(680 - rcW/2, rcY, rcW, 40);
-  ctx.fillStyle = "#facc15";
-  ctx.fillText(rDistLabel, 340, 535);
+  let rearCarX = rxCenter - rearLeadOffsetX;
+  let rearCarY = rearY + 45 + (22.0 - rearLeadDist) * 2.2;
+  let rcScale = Math.max(0.7, Math.min(1.6, 1.0 + (22.0 - rearLeadDist) / 16.0));
+  let rcW = 55 * rcScale;
+  let rcH = 40 * rcScale;
 
-  requestAnimationFrame(render);
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(rearCarX - rcW/2, rearCarY, rcW, rcH);
+  ctx.strokeStyle = "#38bdf8";
+  ctx.strokeRect(rearCarX - rcW/2, rearCarY, rcW, rcH);
+
+  // Headlights
+  ctx.fillStyle = "#fef08a";
+  ctx.beginPath(); ctx.arc(rearCarX - rcW/2 + 10, rearCarY + rcH - 12, 6, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(rearCarX + rcW/2 - 10, rearCarY + rcH - 12, 6, 0, Math.PI*2); ctx.fill();
+
+  // License plate & Grill
+  ctx.fillStyle = "#0f172a"; ctx.fillRect(rearCarX - 16, rearCarY + rcH - 16, 32, 8);
+  ctx.fillStyle = "#cbd5e1"; ctx.fillRect(rearCarX - 10, rearCarY + rcH - 10, 20, 6);
+
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 12px sans-serif";
+  ctx.fillText("후방카메라", centerX + centerW/2 - 30, rearY + 20);
+
+  // Rear Car OSD Tag
+  let rTag = (currentLaneF <= 3.8 && speed <= 0.0) 
+    ? `[뒤차] ${rearLeadDist.toFixed(1)}m (3차선 비상정차 완료 | 2차 추돌 0건)`
+    : (currentLaneF <= 3.8 && state === "SUA"
+      ? `[뒤차] ${rearLeadDist.toFixed(1)}m (비상 감속 정차 유도 중)`
+      : (rearLeadOffsetX > 20
+        ? `[뒤차] ${rearLeadDist.toFixed(1)}m (좌측 회피 추월 중)`
+        : `[뒤차] ${rearLeadDist.toFixed(1)}m (추종 주행 중)`));
+  let rTagColor = (speed <= 0.0) ? "#22c55e" : "#38bdf8";
+  ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+  ctx.fillRect(centerX + 20, rearY + 36, 300, 22);
+  ctx.strokeStyle = rTagColor;
+  ctx.strokeRect(centerX + 20, rearY + 36, 300, 22);
+  ctx.fillStyle = rTagColor;
+  ctx.font = "bold 11px sans-serif";
+  ctx.fillText(rTag, centerX + 28, rearY + 51);
+
+  // -------------------------------------------------------------
+  // Header OSD & Gauges
+  // -------------------------------------------------------------
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 15px sans-serif";
+  ctx.fillText("SafetyON™ All-in-One Electronic Digital Rearview Mirror", 35, 24);
+  ctx.fillStyle = "#a3e635";
+  ctx.font = "11px sans-serif";
+  ctx.fillText("[특허 10건 공표 | 비상제동 0206816 우선심사 확정 | 반도체 0190435 우선심사결정]", 35, 42);
+
+  // Speed & Status Badges
+  ctx.fillStyle = (speed > 0) ? "#4ade80" : "#ef4444";
+  ctx.font = "bold 13px sans-serif";
+  ctx.fillText(`속도: ${speed.toFixed(1)}km/h`, 720, 30);
+  ctx.fillStyle = (gForce < 0) ? "#f59e0b" : "#94a3b8";
+  ctx.fillText(`감속도: ${gForce.toFixed(2)}G`, 840, 30);
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillText(`조향: ${steerAngle.toFixed(1)}°`, 960, 30);
+
+  // Heart Rate & ECG Waveform in Top Right
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillText(`심박: 74bpm`, 1080, 30);
+  // ECG Pulsing Wave
+  ctx.strokeStyle = (speed > 0) ? "#22c55e" : "#ef4444";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  let ecgBaseX = 1170;
+  let ecgBaseY = 28;
+  for (let i = 0; i < 90; i++) {
+    let wave = Math.sin((simTime * 6) + (i * 0.15));
+    if (i > 35 && i < 45) wave = -Math.sin((i - 35) * 0.6) * 12; // QRS complex
+    ctx.lineTo(ecgBaseX + i, ecgBaseY + wave);
+  }
+  ctx.stroke();
+
+  // Top Presentation Timer & Mute Indicator
+  let timerMin = String(Math.floor(timerSec / 60)).padStart(2, '0');
+  let timerS = String(timerSec % 60).padStart(2, '0');
+  let timerColor = (timerSec >= 300) ? "#ef4444" : (timerSec >= 240 ? "#f59e0b" : "#4ade80");
+  ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+  ctx.fillRect(490, 10, 210, 32);
+  ctx.strokeStyle = timerColor;
+  ctx.strokeRect(490, 10, 210, 32);
+  ctx.fillStyle = timerColor;
+  ctx.font = "bold 13px sans-serif";
+  ctx.fillText(`[발표타이머 ${timerMin}:${timerS} / 05:00]`, 502, 31);
+
+  if (isMuted) {
+    ctx.fillStyle = "#ef4444";
+    ctx.fillText("[MUTE 음소거]", 400, 31);
+  }
+
+  // -------------------------------------------------------------
+  // e-Call Dispatch Dialog (When Stopped)
+  // -------------------------------------------------------------
+  if (state === "STOPPED") {
+    ctx.fillStyle = "rgba(11, 17, 32, 0.95)";
+    ctx.fillRect(centerX + 30, driverY + 15, centerW - 60, driverH + rearH - 30);
+    ctx.strokeStyle = "#38bdf8";
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(centerX + 30, driverY + 15, centerW - 60, driverH + rearH - 30);
+
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillText("[비상 정차 완료] 최우측 갓길 정차 완료 및 3자 동시 e-Call 구난 가동", centerX + 60, driverY + 45);
+
+    // 3 Cards
+    let cardW = 195;
+    let cardH = 240;
+    let cardY = driverY + 65;
+
+    // 119 Card
+    ctx.fillStyle = "#1e293b"; ctx.fillRect(centerX + 50, cardY, cardW, cardH);
+    ctx.strokeStyle = "#ef4444"; ctx.strokeRect(centerX + 50, cardY, cardW, cardH);
+    ctx.fillStyle = "#ef4444"; ctx.font = "bold 13px sans-serif"; ctx.fillText("119 소방청 긴급출동", centerX + 65, cardY + 28);
+    ctx.fillStyle = "#cbd5e1"; ctx.font = "11px sans-serif";
+    ctx.fillText("• 상태: 핫라인 연결 완료", centerX + 62, cardY + 60);
+    ctx.fillText("• 위치: 경부선 382.4km 하행", centerX + 62, cardY + 85);
+    ctx.fillText("• 환자: 의식소실(심박 74bpm)", centerX + 62, cardY + 110);
+    ctx.fillText("• 조치: 구급차 출동 (3분 후 도착)", centerX + 62, cardY + 135);
+
+    // Control Room Card
+    ctx.fillStyle = "#1e293b"; ctx.fillRect(centerX + 265, cardY, cardW, cardH);
+    ctx.strokeStyle = "#f59e0b"; ctx.strokeRect(centerX + 265, cardY, cardW, cardH);
+    ctx.fillStyle = "#f59e0b"; ctx.font = "bold 13px sans-serif"; ctx.fillText("운송회사 중앙관제실", centerX + 280, cardY + 28);
+    ctx.fillStyle = "#cbd5e1"; ctx.font = "11px sans-serif";
+    ctx.fillText("• 상태: LTE 관제 채널 LIVE", centerX + 277, cardY + 60);
+    ctx.fillText("• 차량: 경기70아 1234호", centerX + 277, cardY + 85);
+    ctx.fillText("• 도어: 비상 자동 언락", centerX + 277, cardY + 110);
+    ctx.fillText("• 조치: 대체 버스 긴급 배차", centerX + 277, cardY + 135);
+
+    // Family SMS Card
+    ctx.fillStyle = "#1e293b"; ctx.fillRect(centerX + 480, cardY, cardW, cardH);
+    ctx.strokeStyle = "#22c55e"; ctx.strokeRect(centerX + 480, cardY, cardW, cardH);
+    ctx.fillStyle = "#22c55e"; ctx.font = "bold 13px sans-serif"; ctx.fillText("가족/지인 안심 SMS", centerX + 495, cardY + 28);
+    ctx.fillStyle = "#cbd5e1"; ctx.font = "11px sans-serif";
+    ctx.fillText("• 상태: 긴급 문자 발송 완료", centerX + 492, cardY + 60);
+    ctx.fillStyle = "#facc15";
+    ctx.fillText("• 수신: 010-5121-1353", centerX + 492, cardY + 85);
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillText("• 내용: [세이프티온 안심문자]", centerX + 492, cardY + 110);
+    ctx.fillText("• 조치: 위치 지도 링크 전송 완료", centerX + 492, cardY + 135);
+
+    // Reset button
+    ctx.fillStyle = "#2563eb";
+    ctx.fillRect(centerX + centerW/2 - 90, cardY + cardH + 15, 180, 36);
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 13px sans-serif";
+    ctx.fillText("키보드 [R] 누르면 리셋", centerX + centerW/2 - 68, cardY + cardH + 38);
+  }
+
+  requestAnimationFrame(loop);
 }
-render();
+
+function intMod(val, mod) {
+  return Math.floor(val) % mod;
+}
+
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
