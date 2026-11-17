@@ -678,7 +678,8 @@ function loop(now) {
   simTime += dt;
   const nowSec = now / 1000;
 
-  roadOffset = (roadOffset + speed * dt * 7.5) % 80;
+  roadOffset = (roadOffset - speed * dt * 7.5) % 80;
+  if (roadOffset > 0) roadOffset -= 80;
 
   // 1. 실시간 웹캠 프레임 안면 & 눈동자(동공) 컴퓨터 비전 분석
   analyzeCameraFeed(now);
@@ -853,16 +854,30 @@ function loop(now) {
     rearLeadOffsetX = 0.0;
   }
 
-  // 사이드 트래픽 이동
+  // 🌟 사이드 트래픽 이동 (대표님 요청: 모든 통행 차량이 같은 방향 [아래에서 위로] 전진 주행!)
   for (let v of leftTraffic) {
-    v.y += (v.speed - speed) * dt * 5.0;
-    if (v.y > 620) v.y = -60;
-    if (v.y < -100) v.y = 600;
+    let relSpeed = v.speed - speed;
+    let vy;
+    if (speed <= 5.0) {
+      vy = -v.speed * 6.8; // 우리 차가 정차하면 통행 차량들이 아래에서 위로 쌩쌩 전진 통과!
+    } else {
+      vy = -relSpeed * 6.8; // 우리보다 빠른 차는 아래에서 위로(정방향) 추월!
+    }
+    v.y += vy * dt;
+    if (v.y < -120) v.y = 640;
+    if (v.y > 680) v.y = -80;
   }
   for (let v of rightTraffic) {
-    v.y += (v.speed - speed) * dt * 5.0;
-    if (v.y > 620) v.y = -60;
-    if (v.y < -100) v.y = 600;
+    let relSpeed = v.speed - speed;
+    let vy;
+    if (speed <= 5.0) {
+      vy = -v.speed * 6.8;
+    } else {
+      vy = -relSpeed * 6.8;
+    }
+    v.y += vy * dt;
+    if (v.y < -120) v.y = 640;
+    if (v.y > 680) v.y = -80;
   }
 
   // -------------------------------------------------------------
