@@ -1207,7 +1207,7 @@ function loop(now) {
   ctx.lineWidth = 2;
   ctx.strokeRect(centerX, driverY, centerW, driverH);
 
-  let realVideoActive = hasWebcam && video.readyState >= 2 && video.videoWidth > 0;
+  let realVideoActive = (video.srcObject && video.videoWidth > 0) || (hasWebcam && video.readyState >= 1);
 
   if (realVideoActive) {
     ctx.save();
