@@ -82,9 +82,10 @@
     width: 100%; 
     max-width: 1360px; 
     display: grid; 
-    grid-template-columns: repeat(12, 1fr); 
-    gap: 3px; 
-    margin-top: 6px; 
+    grid-template-columns: repeat(auto-fit, minmax(82px, 1fr)); 
+    gap: 4px; 
+    margin-top: 8px; 
+    transition: max-width 0.3s ease;
   }
   .btn { 
     padding: 10px 2px; 
@@ -160,6 +161,54 @@
     background: #2563eb; color: white; border: none; padding: 9px 28px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px;
   }
 
+
+  /* 실물 1:1 규격 모드 & 마운트 브라켓 */
+  #mount-arm {
+    display: none;
+    width: 110px;
+    height: 34px;
+    background: linear-gradient(to bottom, #0f172a, #1e293b, #334155);
+    border-radius: 8px 8px 0 0;
+    margin: 0 auto;
+    border: 2px solid #475569;
+    border-bottom: none;
+    box-shadow: 0 -6px 18px rgba(0,0,0,0.9);
+    position: relative;
+  }
+  #mount-arm::after {
+    content: '🚗 차량 천장 마운트 브라켓 (실물 1:1)';
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #94a3b8;
+    white-space: nowrap;
+    font-weight: bold;
+  }
+  #ruler-bar {
+    display: none;
+    width: 100%;
+    max-width: 840px;
+    background: #0b1329;
+    border: 2px solid #38bdf8;
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #fef08a;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  }
+
+  #canvas-container.real-scale {
+    max-width: 840px !important;
+    border: 14px solid #1e293b !important;
+    border-radius: 28px !important;
+    box-shadow: 0 25px 65px rgba(0,0,0,0.95), 0 0 0 3px #475569 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   @media (max-width: 768px) {
     #dock { grid-template-columns: repeat(4, 1fr); gap: 3px; }
     .btn { padding: 8px 2px; font-size: 10px; }
@@ -171,12 +220,20 @@
 
 <video id="video-element" autoplay playsinline webkit-playsinline muted></video>
 
+
+<div id="ruler-bar">
+  📏 <b>[실물 규격 1:1 체감 모드]</b> 차량용 11.88인치 와이드 규격: <b>가로 27.0cm × 세로 6.8cm</b> (24:9 비율)<br>
+  💳 <b>5분할 각 화면 크기:</b> 신용카드(8.5×5.4cm) 1장을 세로로 세워 나란히 5장 배치한 크기와 동일합니다!
+</div>
+<div id="mount-arm"></div>
 <div id="canvas-container">
   <div id="cam-banner" onclick="startCameraAndAudio()">📷 [터치하여 카메라 켜기] 실시간 눈동자 DSM & 사운드 시작</div>
   <canvas id="mirror" width="1360" height="680" onclick="handleCanvasClick(event)"></canvas>
 </div>
 
 <div id="dock">
+    <button id="btn-scale" class="btn" style="background:linear-gradient(135deg, #10b981, #059669); font-weight:900; border:2px solid #6ee7b7;" onclick="toggleRealScale()">📐 실물 1:1 크기</button>
+  <button id="btn-view" class="btn" style="background:linear-gradient(135deg, #8b5cf6, #6d28d9); font-weight:900; border:2px solid #c4b5fd;" onclick="toggleViewMode()">🔄 5분할↔고속후방</button>
   <button class="btn btn-cam" style="background:#0284c7; border:2px solid #38bdf8; font-weight:900;" onclick="startCameraAndAudio()">📷 카메라 켜기</button>
     <button class="btn btn-demo" onclick="triggerFastDemo()">⚡ 15초 쾌속시연</button>
   <button class="btn btn-space" onclick="triggerSPACE()">SPACE: 기절/갓길</button>
@@ -288,6 +345,53 @@ let heartRate = 74;
 let isIRMode = false;
 
 // 🌟 15초 쾌속 데모 모드 플래그
+
+let isRealScaleMode = false;
+let currentViewMode = '5SPLIT'; // '5SPLIT' 또는 'HIGHWAY'
+
+function toggleRealScale() {
+  isRealScaleMode = !isRealScaleMode;
+  const container = document.getElementById('canvas-container');
+  const ruler = document.getElementById('ruler-bar');
+  const mount = document.getElementById('mount-arm');
+  const btn = document.getElementById('btn-scale');
+  
+
+  const dock = document.getElementById('dock');
+  if (isRealScaleMode) {
+    container.classList.add('real-scale');
+    if (dock) dock.style.maxWidth = '840px';
+    ruler.style.display = 'block';
+    mount.style.display = 'block';
+    btn.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+    btn.style.borderColor = '#fef08a';
+    btn.innerText = '📐 모니터 와이드';
+  } else {
+    container.classList.remove('real-scale');
+    if (dock) dock.style.maxWidth = '1360px';
+    ruler.style.display = 'none';
+    mount.style.display = 'none';
+    btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    btn.style.borderColor = '#6ee7b7';
+    btn.innerText = '📐 실물 1:1 크기';
+  }
+
+}
+
+function toggleViewMode() {
+  currentViewMode = (currentViewMode === '5SPLIT') ? 'HIGHWAY' : '5SPLIT';
+  const btn = document.getElementById('btn-view');
+  if (currentViewMode === 'HIGHWAY') {
+    btn.innerText = '🔄 고속후방 (현재)';
+    btn.style.background = 'linear-gradient(135deg, #ec4899, #be185d)';
+    btn.style.borderColor = '#fbcfe8';
+  } else {
+    btn.innerText = '🔄 5분할 (현재)';
+    btn.style.background = 'linear-gradient(135deg, #8b5cf6, #6d28d9)';
+    btn.style.borderColor = '#c4b5fd';
+  }
+}
+
 let isFastDemoRunning = false;
 let fastDemoStartTime = 0;
 
@@ -1012,10 +1116,225 @@ function loop(now) {
     if (v.y > 680) v.y = -80;
   }
 
+
+// -------------------------------------------------------------
+// [고속 주행 스마트 후방 모드] 렌더링 함수
+// 룸미러 전체를 초광각 170° 후방 영상으로 채우고, 깜빡이/기절 시 PIP 자동 팝업
+// -------------------------------------------------------------
+function drawHighwayMode(nowSec, dt, shiftRatio, isAbnormal) {
+  // 1. 전체 후방 디지털 미러 배경
+  ctx.fillStyle = "#0a0f1d";
+  ctx.fillRect(0, 0, 1360, 680);
+
+  let borderAlert = (hazardLights && blinkPhase);
+  ctx.strokeStyle = borderAlert ? "#ef4444" : "#38bdf8";
+  ctx.lineWidth = borderAlert ? 6 : 3;
+  ctx.strokeRect(25, 55, 1310, 585);
+
+  const mainX = 35, mainY = 65, mainW = 1290, mainH = 565;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(mainX, mainY, mainW, mainH);
+  ctx.clip();
+
+  // 후방 아스팔트 도로 (소실점 방식)
+  ctx.fillStyle = "#0c1424";
+  ctx.fillRect(mainX, mainY, mainW, mainH);
+
+  let vpX = mainX + mainW / 2 + (shiftRatio - 0.25) * 140;
+  let vpY = mainY + 120; // 소실점
+
+  // 고속도로 원근감 도로면
+  ctx.fillStyle = "#111b2e";
+  ctx.beginPath();
+  ctx.moveTo(vpX - 100, vpY);
+  ctx.lineTo(vpX + 100, vpY);
+  ctx.lineTo(mainX + mainW + 300, mainY + mainH);
+  ctx.lineTo(mainX - 300, mainY + mainH);
+  ctx.closePath();
+  ctx.fill();
+
+  // 도로 차선 (후방으로 빠르게 멀어지는 애니메이션)
+  for (let d = 0; d < 7; d++) {
+    let t = ((nowSec * (speed / 25) + d * 0.16) % 1.0);
+    let ly = vpY + (mainH - (vpY - mainY)) * (t * t);
+    let lw = 6 + t * 45;
+    let spread = (ly - vpY) * 1.8;
+
+    // 차선 점선 (1차선/2차선/3차선 구분)
+    ctx.fillStyle = "rgba(226, 232, 240, 0.85)";
+    ctx.fillRect(vpX - spread * 0.45 - lw/2, ly, lw, 12 + t * 24);
+    ctx.fillRect(vpX + spread * 0.45 - lw/2, ly, lw, 12 + t * 24);
+  }
+
+  // 갓길 노란색 실선 및 가드레일
+  ctx.strokeStyle = "#eab308";
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(vpX + 80, vpY);
+  ctx.lineTo(mainX + mainW - 40, mainY + mainH);
+  ctx.stroke();
+
+  // 후방 차량 (접근 중인 차량)
+  if (speed > 0 || currentLaneF <= 4.0) {
+    let rearCarDistRatio = 0.55 + Math.sin(nowSec * 1.5) * 0.08;
+    let rcY = vpY + (mainH - (vpY - mainY)) * rearCarDistRatio;
+    let rcW = 140 * rearCarDistRatio;
+    let rcH = 90 * rearCarDistRatio;
+    let rcX = vpX + 30 - rcW / 2;
+
+    // 차량 바디
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(rcX, rcY, rcW, rcH);
+    ctx.strokeStyle = "#475569"; ctx.lineWidth = 2;
+    ctx.strokeRect(rcX, rcY, rcW, rcH);
+
+    // 차량 테일램프 (후방에서 오는 차의 헤드라이트)
+    ctx.fillStyle = "#fef08a";
+    ctx.beginPath(); ctx.arc(rcX + rcW * 0.2, rcY + rcH * 0.6, 10 * rearCarDistRatio, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(rcX + rcW * 0.8, rcY + rcH * 0.6, 10 * rearCarDistRatio, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle = "#94a3b8"; ctx.font = "bold 11px sans-serif";
+    ctx.fillText(`[후방추종] 78러 9981 (안전거리 ${rearLeadDist.toFixed(1)}m)`, rcX - 10, rcY - 10);
+  }
+
+  // 거리 가이드선 (녹색 25m, 노랑 15m, 빨강 7m)
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = "rgba(34, 197, 94, 0.8)";
+  ctx.beginPath(); ctx.moveTo(vpX - 280, mainY + mainH - 180); ctx.lineTo(vpX + 280, mainY + mainH - 180); ctx.stroke();
+  ctx.fillStyle = "#22c55e"; ctx.font = "bold 11px sans-serif"; ctx.fillText("25m 안전", vpX + 290, mainY + mainH - 176);
+
+  ctx.strokeStyle = "rgba(234, 179, 8, 0.85)";
+  ctx.beginPath(); ctx.moveTo(vpX - 220, mainY + mainH - 110); ctx.lineTo(vpX + 220, mainY + mainH - 110); ctx.stroke();
+  ctx.fillStyle = "#eab308"; ctx.fillText("15m 주의", vpX + 230, mainY + mainH - 106);
+
+  ctx.strokeStyle = "rgba(239, 68, 68, 0.9)";
+  ctx.beginPath(); ctx.moveTo(vpX - 160, mainY + mainH - 45); ctx.lineTo(vpX + 160, mainY + mainH - 45); ctx.stroke();
+  ctx.fillStyle = "#ef4444"; ctx.fillText("7m 위험", vpX + 170, mainY + mainH - 41);
+
+  // 상단 OSD 헤더
+  ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
+  ctx.fillRect(mainX, mainY, mainW, 46);
+  ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(mainX, mainY + 46); ctx.lineTo(mainX + mainW, mainY + 46); ctx.stroke();
+
+  ctx.fillStyle = "#38bdf8"; ctx.font = "bold 14px sans-serif";
+  ctx.fillText("📷 CH-5 초광각 후방 디지털 미러 (170° Super-Wide Field)", mainX + 20, mainY + 28);
+
+  ctx.fillStyle = "#facc15"; ctx.font = "bold 13px sans-serif";
+  ctx.fillText(`차속: ${speed.toFixed(0)} km/h | 심박: ${heartRate} bpm | 차선: ${currentLaneF.toFixed(1)}차선 | 브레이크 추력: ${brakeLoadKg.toFixed(0)} kgf`, mainX + 540, mainY + 28);
+
+  ctx.fillStyle = "#a3e635"; ctx.font = "bold 12px sans-serif";
+  ctx.fillText("상태: [고속도로 순항]", mainX + mainW - 160, mainY + 28);
+
+  // -----------------------------------------------------------
+  // [스마트 PIP 1] 우측 깜빡이 또는 갓길 이동 시: 우측 사이드 카메라 팝업
+  // -----------------------------------------------------------
+  if (turnSignalRight || currentLaneF > 3.0 || hazardLights) {
+    let pipW = 320, pipH = 220;
+    let pipX = mainX + mainW - pipW - 20;
+    let pipY = mainY + mainH - pipH - 20;
+
+    ctx.fillStyle = "#090e1a";
+    ctx.fillRect(pipX, pipY, pipW, pipH);
+    ctx.strokeStyle = (blinkPhase && turnSignalRight) ? "#22c55e" : "#38bdf8";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(pipX, pipY, pipW, pipH);
+
+    ctx.fillStyle = "rgba(2, 132, 199, 0.9)";
+    ctx.fillRect(pipX, pipY, pipW, 26);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 11px sans-serif";
+    ctx.fillText("▶ CH-3 우측 사각지대 카메라 (깜빡이 연동 PIP)", pipX + 10, pipY + 18);
+
+    // 내부 우측 도로 및 가드레일 그래픽
+    ctx.strokeStyle = "#eab308"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(pipX + 80, pipY + 40); ctx.lineTo(pipX + 120, pipY + pipH); ctx.stroke();
+
+    ctx.fillStyle = (currentLaneF > 4.2) ? "#22c55e" : "#f59e0b";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText((currentLaneF > 4.2) ? "✓ 우측 갓길 1.2m 밀착 안전정차" : "⚠️ 우측 사각지대 차선변경 감시중", pipX + 20, pipY + pipH - 20);
+  }
+
+  // -----------------------------------------------------------
+  // [스마트 PIP 2] 운전자 이상/기절 감지 시: 중앙 상단 DSM 긴급 팝업
+  // -----------------------------------------------------------
+  if (isAbnormal) {
+    let pipW = 380, pipH = 240;
+    let pipX = mainX + mainW / 2 - pipW / 2;
+    let pipY = mainY + 65;
+
+    ctx.fillStyle = "rgba(10, 15, 29, 0.96)";
+    ctx.fillRect(pipX, pipY, pipW, pipH);
+    ctx.strokeStyle = (blinkPhase) ? "#ef4444" : "#facc15";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(pipX, pipY, pipW, pipH);
+
+    ctx.fillStyle = "rgba(220, 38, 38, 0.95)";
+    ctx.fillRect(pipX, pipY, pipW, 30);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 13px sans-serif";
+    ctx.fillText("🚨 CH-1 운전자 동공/의식 상실 긴급 감지!", pipX + 25, pipY + 20);
+
+    // 웹캠 또는 가상 운전자 안면
+    let realVideoActive = hasWebcam && video.readyState >= 2 && video.videoWidth > 0;
+    if (realVideoActive) {
+      ctx.save();
+      ctx.translate(pipX + pipW - 30, pipY + 38);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, pipW - 60, pipH - 85);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(pipX + 30, pipY + 40, pipW - 60, pipH - 85);
+      ctx.fillStyle = "#ef4444"; ctx.font = "bold 14px sans-serif";
+      ctx.fillText("⚠️ 눈 감김 100% (기절 확정)", pipX + 100, pipY + 110);
+      ctx.fillStyle = "#cbd5e1"; ctx.font = "12px sans-serif";
+      ctx.fillText(`심박수: ${heartRate} bpm 급감`, pipX + 130, pipY + 135);
+    }
+
+    ctx.fillStyle = "rgba(239, 68, 68, 0.95)";
+    ctx.fillRect(pipX + 15, pipY + pipH - 35, pipW - 30, 26);
+    ctx.fillStyle = "#fff"; ctx.font = "bold 11px sans-serif";
+    ctx.fillText("SafetyOn 통합 ECU: 150kgf 다단 제동 자동 개입", pipX + 35, pipY + pipH - 18);
+  }
+
+  // -----------------------------------------------------------
+  // [갓길 정차 완료 시] 119 e-Call 구난 카드
+  // -----------------------------------------------------------
+  if (state === "STOPPED" && currentLaneF > 4.2) {
+    let cardW = 540, cardH = 170;
+    let cardX = mainX + mainW / 2 - cardW / 2;
+    let cardY = mainY + mainH / 2 - cardH / 2 + 30;
+
+    ctx.fillStyle = "rgba(15, 23, 42, 0.96)";
+    ctx.fillRect(cardX, cardY, cardW, cardH);
+    ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 3;
+    ctx.strokeRect(cardX, cardY, cardW, cardH);
+
+    ctx.fillStyle = "#38bdf8"; ctx.font = "bold 16px sans-serif";
+    ctx.fillText("✓ [비상 정차 완료] 최우측 갓길 안전정차 및 119 자동 e-Call", cardX + 30, cardY + 35);
+
+    ctx.fillStyle = "#ef4444"; ctx.font = "bold 13px sans-serif";
+    ctx.fillText("• 119 소방청: GPS 좌표 (경부선 382.4km) 및 긴급 구급 요청 전송", cardX + 30, cardY + 70);
+
+    ctx.fillStyle = "#f59e0b"; ctx.font = "bold 13px sans-serif";
+    ctx.fillText("• 운송회사 관제실: LTE 비상 채널 LIVE 연결", cardX + 30, cardY + 100);
+
+    ctx.fillStyle = "#22c55e"; ctx.font = "bold 13px sans-serif";
+    ctx.fillText("• 비상연락망 SMS: 010-5121-1353 문자 발송 완료", cardX + 30, cardY + 130);
+  }
+
+  ctx.restore();
+}
+
   // -------------------------------------------------------------
   // 5. 캔버스 렌더링
   // -------------------------------------------------------------
   ctx.fillStyle = "#0c101c";
+  if (currentViewMode === 'HIGHWAY') {
+    drawHighwayMode(nowSec, dt, shiftRatio, isAbnormal);
+    requestAnimationFrame(loop);
+    return;
+  }
   ctx.fillRect(0, 0, 1360, 680);
 
   let borderAlert = (hazardLights && blinkPhase);
